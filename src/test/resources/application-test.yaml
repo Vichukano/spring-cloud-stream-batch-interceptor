@@ -1,0 +1,29 @@
+spring:
+  main.allow-bean-definition-overriding: true
+  application.name: batch-interceptor-example
+  cloud.stream:
+    bindings:
+      processor-in-0:
+        group: test-1
+        destination: topic-in
+        binder: in-binder
+        consumer:
+          batchMode: true
+      processor-out-0:
+        destination: topic-out
+        binder: out-binder
+    function.definition: processor
+    binders:
+      in-binder:
+        type: kafka
+        environment:
+          spring.cloud.stream.kafka.binder:
+            brokers: "localhost:9092"
+            consumer-properties:
+              auto.offset.reset: earliest
+              value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      out-binder:
+        type: kafka
+        environment:
+          spring.cloud.stream.kafka.binder:
+            brokers: "localhost:9092"

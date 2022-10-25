@@ -1,0 +1,1 @@
+spring cloud stream kafka batch record interceptor example
