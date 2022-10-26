@@ -1,6 +1,5 @@
 package ru.vichukano.kafka.batch.interceptor;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -32,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
-@Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -41,7 +39,7 @@ import java.util.concurrent.TimeoutException;
     brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"},
     partitions = 1
 )
-public class AppTest {
+class AppTest {
     private static final String TOPIC_IN = "topic-in";
     private static final String TOPIC_OUT = "topic-out";
     private final BlockingQueue<ConsumerRecord<String, String>> consumerRecords = new LinkedBlockingQueue<>();
