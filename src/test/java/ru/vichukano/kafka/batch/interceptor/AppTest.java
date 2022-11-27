@@ -1,36 +1,27 @@
 package ru.vichukano.kafka.batch.interceptor;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+import io.github.vichukano.kafka.junit.extension.EnableKafkaQueues;
+import io.github.vichukano.kafka.junit.extension.OutputQueue;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.MessageListener;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.ActiveProfiles;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
+@EnableKafkaQueues
 @SpringBootTest
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -42,25 +33,8 @@ import java.util.concurrent.TimeoutException;
 class AppTest {
     private static final String TOPIC_IN = "topic-in";
     private static final String TOPIC_OUT = "topic-out";
-    private final BlockingQueue<ConsumerRecord<String, String>> consumerRecords = new LinkedBlockingQueue<>();
-    @Autowired
-    private EmbeddedKafkaBroker embeddedKafkaBroker;
-
-    @BeforeAll
-    void setUp() {
-        var props = new HashMap<String, Object>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-consumer-id");
-        var consumerFactory = new DefaultKafkaConsumerFactory<String, String>(props);
-        var containerProps = new ContainerProperties(TOPIC_OUT);
-        var listenerContainer = new KafkaMessageListenerContainer<>(consumerFactory, containerProps);
-        listenerContainer.setupMessageListener((MessageListener<String, String>) consumerRecords::add);
-        listenerContainer.start();
-        ContainerTestUtils.waitForAssignment(listenerContainer, embeddedKafkaBroker.getPartitionsPerTopic());
-    }
+    @OutputQueue(topic = TOPIC_OUT, partitions = 1)
+    private BlockingQueue<ConsumerRecord<String, String>> consumerRecords;
 
     @Test
     void shouldFilterRecordWithoutHeader() throws ExecutionException, InterruptedException, TimeoutException {
